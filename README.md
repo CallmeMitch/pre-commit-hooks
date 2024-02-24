@@ -1,2 +1,42 @@
 # pre-commit-hooks
 A pre-commit script in Python3
+
+
+You can launch this script with bash script.
+
+```
+#!/bin/bash
+
+python_version=$(python3 --version 2>&1 | awk '{print $2}' | cut -d '.' -f 1)
+echo "$modified_path"
+if [ "$python_version" == "3" ]
+then
+    mkdir -p .git-templates/hooks
+    chmod +x ~/.git-templates/hooks/commit-msg
+    git config --global init.templatedir '.git-templates/hooks'/
+else
+    echo "upgrade your python in python3"; fi
+
+
+echo "Veuillez renseigner un chemin pour que le script réinitialise la configuration des .git de chacun de vos repo clonés"
+echo "Par défaut, le script se lance à partir du répertoire n-1"
+read -p "Saisir une valeur : " root_directory
+
+if [ "$root_directory" != "no" ]; then
+    # Récupérer le chemin racine où vous souhaitez effectuer la mise à jour IMPORTANT 
+    echo "Voici le chemin actuel '$root_directory'"
+    # Itérer à travers tous les dépôts Git dans le répertoire racine
+    for repo in $(find "$root_directory" -type d -name .git); do
+        repo_directory=$(dirname "$repo")
+        # Réinitialiser la configuration de git dans chaque repo
+        git --git-dir="$repo_directory/.git" init
+    done
+else
+    path_for_initialize_git_init=$(cd "./.." && pwd)
+    echo "Voici le chemin actuel '$path_for_initialize_git_init'"
+    for repo in $(find "$path_for_initialize_git_init" -type d -name .git); do
+        repo_directory=$(dirname "$repo")
+        git --git-dir="$repo_directory/.git" init
+    done
+fi
+```
